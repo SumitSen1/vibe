@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+  }
+  
+  .dark body,
+  body.dark {
+    @apply bg-slate-900 text-slate-100;
+  }
+
+  /* Fix Leaflet container z-index issues */
+  .leaflet-container {
+    z-index: 1;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full px-4 py-2 mt-1 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gov-500 focus:border-gov-500 transition-colors duration-200;
+  }
+  
+  .btn-primary {
+    @apply w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gov-700 hover:bg-gov-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gov-500 transition-colors duration-200;
+  }
+
+  .btn-outline {
+    @apply w-full flex justify-center py-2.5 px-4 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gov-500 transition-colors duration-200;
+  }
+  
+  .label-text {
+    @apply block text-sm font-medium text-slate-700;
+  }
+
+  /* Glassmorphism sidebar */
+  .glass-sidebar {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .dark .glass-sidebar {
+    background: rgba(15, 23, 42, 0.9);
+    border-right: 1px solid rgba(51, 65, 85, 0.5);
+  }
+
+  /* Stat card hover effect */
+  .stat-card {
+    @apply bg-white rounded-2xl p-5 shadow-sm border border-slate-100 transition-all duration-300;
+  }
+  .dark .stat-card {
+    @apply bg-slate-800 border-slate-700;
+  }
+  .stat-card:hover {
+    @apply shadow-md border-slate-200;
+    transform: translateY(-2px);
+  }
+  .dark .stat-card:hover {
+    @apply shadow-lg border-slate-600;
+  }
+
+  /* Zone list item */
+  .zone-item {
+    @apply flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-transparent transition-all duration-200;
+  }
+  .dark .zone-item {
+    @apply bg-slate-700/50;
+  }
+  .zone-item:hover {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+  }
+  .dark .zone-item:hover {
+    background-color: rgba(127, 29, 29, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center p-4;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+  .dark .modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden;
+    animation: bounceIn 0.5s ease-out forwards;
+  }
+  .dark .modal-content {
+    @apply bg-slate-800;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .dark .scrollbar-thin {
+    scrollbar-color: #475569 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+  }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #475569;
+  }
+}
