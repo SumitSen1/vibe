@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,9 +27,13 @@ const Register = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
   const navigate = useNavigate();
+
+  const { register, isLoading, error: storeError, clearError } = useAuthStore();
+
+  // Display store errors or local validation errors
+  const error = localError || storeError;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -48,7 +53,8 @@ const Register = () => {
         [name]: type === 'checkbox' ? checked : value
       });
     }
-    setError('');
+    setLocalError('');
+    clearError();
   };
 
   const calculatePasswordStrength = (password) => {
@@ -66,21 +72,21 @@ const Register = () => {
 
   const validateForm = () => {
     if (!formData.consentLocationTracking || !formData.consentBlockchainStorage) {
-      setError('You must accept all required consents to register.');
+      setLocalError('You must accept all required consents to register.');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
+      setLocalError('Passwords do not match.');
       return false;
     }
     if (formData.nationality === 'Indian') {
       if (formData.aadhaarNumber && !/^\d{12}$/.test(formData.aadhaarNumber)) {
-        setError('Aadhaar number must be exactly 12 digits.');
+        setLocalError('Aadhaar number must be exactly 12 digits.');
         return false;
       }
     } else {
       if (!formData.passportNumber) {
-        setError('Passport number is required for foreign nationals.');
+        setLocalError('Passport number is required for foreign nationals.');
         return false;
       }
     }
@@ -91,27 +97,10 @@ const Register = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert('Registration Successful! Please login.');
-        navigate('/login');
-      } else {
-        const errorMsg = data.errors ? data.errors[0].message : data.message;
-        setError(errorMsg || 'Registration failed');
-      }
-    } catch (err) {
-      setError('Server error. Please try again later.');
-    } finally {
-      setLoading(false);
+    const result = await register(formData);
+    if (result.success) {
+      alert('Registration Successful! Please login.');
+      navigate('/login');
     }
   };
 
@@ -285,8 +274,8 @@ const Register = () => {
             <Link to="/login" className="text-sm font-medium text-gov-600 hover:text-gov-500">
               &larr; Back to Login
             </Link>
-            <button type="submit" disabled={loading} className="btn-primary w-auto px-8">
-              {loading ? 'Registering...' : 'Register Account'}
+            <button type="submit" disabled={isLoading} className="btn-primary w-auto px-8">
+              {isLoading ? 'Registering...' : 'Register Account'}
             </button>
           </div>
         </form>

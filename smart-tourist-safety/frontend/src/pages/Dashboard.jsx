@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import MapWidget from '../components/MapWidget';
@@ -28,7 +29,7 @@ function getDistanceMeters(lat1, lng1, lat2, lng2) {
  */
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, logout: storeLogout } = useAuthStore();
   const [zones, setZones] = useState([]);
   const [position, setPosition] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,21 +51,8 @@ const Dashboard = () => {
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
-  // Auth check + user info
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({ id: payload.id, username: payload.username || 'Tourist' });
-    } catch {
-      setUser({ username: 'Tourist' });
-    }
-  }, [navigate]);
+  // Auth is now handled by ProtectedRoute in App.jsx
+  // and user comes from useAuthStore above.
 
   // Get user's live location
   useEffect(() => {
@@ -120,8 +108,8 @@ const Dashboard = () => {
     await fetchZones();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    await storeLogout();
     navigate('/login');
   };
 

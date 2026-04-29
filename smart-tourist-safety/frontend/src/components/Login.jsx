@@ -17,6 +17,8 @@ export default function Login() {
     const e = {};
     if (!form.username.trim()) e.username = 'Username is required.';
     if (!form.password)        e.password = 'Password is required.';
+    console.log("Validate Passed",e);
+    
     return e;
   };
 

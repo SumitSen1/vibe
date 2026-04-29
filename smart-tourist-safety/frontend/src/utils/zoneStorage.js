@@ -7,13 +7,15 @@
  *   - Keeps localStorage and API in sync when possible.
  */
 
-const API_URL = 'http://localhost:5000/api/zones';
+import { useAuthStore } from '../store';
+
+const API_URL = '/api/zones';
 const LS_KEY = 'tourist_safety_zones';
 
 // ── Helpers ────────────────────────────────────────────────────────
 
 function getToken() {
-  return localStorage.getItem('token');
+  return useAuthStore.getState().token;
 }
 
 function authHeaders() {

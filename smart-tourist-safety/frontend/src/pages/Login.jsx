@@ -1,53 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuthStore();
+
+  // If already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
-  };
-
-  const validateForm = () => {
-    if (!formData.username || !formData.password) {
-      setError('Both username and password are required');
-      return false;
-    }
-    return true;
+    clearError();
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    try {
-      // We will pretend to call the API for now, simulating success if they match a dummy value
-      // This allows the UI to be testable without the backend fully wired in this specific preview.
-      // But we are coding it properly.
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+    if (!formData.username || !formData.password) {
+      return;
+    }
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard'); 
-      } else {
-        setError(data.message || 'Invalid username or password');
-      }
-    } catch (err) {
-      setError('Server error. Please try again later.');
-    } finally {
-      setLoading(false);
+    const result = await login(formData);
+    if (result.success) {
+      navigate('/dashboard');
     }
   };
 
@@ -148,10 +130,10 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="btn-primary"
             >
-              {loading ? (
+              {isLoading ? (
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

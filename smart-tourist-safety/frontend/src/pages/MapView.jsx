@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store';
 import { Map, useMap, MapMarker, MarkerContent, MarkerPopup } from '../components/ui/map';
 import CommentModal from '../components/CommentModal';
 import ProximityAlert from '../components/ProximityAlert';
@@ -290,8 +291,8 @@ const MapView = () => {
     if (!window.confirm('EMERGENCY: Do you want to dispatch an SOS to authorities?')) return;
     setIsSosLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/alerts', {
+      const token = useAuthStore.getState().token;
+      const res = await fetch('/api/alerts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ lat: position.lat, lng: position.lng }),
