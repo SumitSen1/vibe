@@ -7,24 +7,56 @@ import { Map, useMap, MapMarker, MarkerContent, MarkerPopup } from './ui/map';
 // ---------------------------------------------------------------------------
 function FlyToHandler({ flyToPosition }) {
   const { map, isLoaded } = useMap();
-  const pendingRef = useRef(null);
+  const lastTsRef = useRef(null);
 
-  // Stash the latest flyToPosition so we can execute it once the map loads
   useEffect(() => {
-    if (flyToPosition) pendingRef.current = flyToPosition;
-  }, [flyToPosition]);
+    if (!flyToPosition) return;
+    // Avoid re-firing for the same flyToPosition object
+    if (flyToPosition._ts && flyToPosition._ts === lastTsRef.current) return;
+    lastTsRef.current = flyToPosition._ts || null;
 
-  // Execute fly when both map is ready AND a position is pending/new
-  useEffect(() => {
     if (!map || !isLoaded) return;
-    const target = pendingRef.current;
-    if (!target) return;
+
+    try {
+      map.flyTo({
+        center: [flyToPosition.lng, flyToPosition.lat],
+        zoom: 16,
+        duration: 800,
+      });
+    } catch (err) {
+      console.warn('FlyToHandler: flyTo failed, trying easeTo', err);
+      try {
+        map.easeTo({
+          center: [flyToPosition.lng, flyToPosition.lat],
+          zoom: 16,
+          duration: 600,
+        });
+      } catch (err2) {
+        console.error('FlyToHandler: easeTo also failed', err2);
+      }
+    }
+  }, [map, isLoaded, flyToPosition]);
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// InitialCenter — centers map on user position once the map loads
+// ---------------------------------------------------------------------------
+function InitialCenter({ position }) {
+  const { map, isLoaded } = useMap();
+  const hasCenteredRef = useRef(false);
+
+  useEffect(() => {
+    if (!map || !isLoaded || !position || hasCenteredRef.current) return;
+    hasCenteredRef.current = true;
+
     map.easeTo({
-      center: [target.lng, target.lat],
-      zoom: 16,
-      duration: 600,
+      center: [position.lng, position.lat],
+      zoom: 14,
+      duration: 400,
     });
-  }, [map, isLoaded, flyToPosition]); // flyToPosition in deps triggers on new selections
+  }, [map, isLoaded, position]);
 
   return null;
 }
@@ -151,6 +183,7 @@ const MapWidget = ({ position, zones = [], flyToPosition }) => {
         keyboard={false}
       >
         <FlyToHandler flyToPosition={flyToPosition} />
+        <InitialCenter position={position} />
         <ZoneCircles zones={zones} />
 
         {/* User location marker */}

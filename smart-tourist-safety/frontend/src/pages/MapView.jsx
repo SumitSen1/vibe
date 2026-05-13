@@ -305,17 +305,30 @@ const MapView = () => {
 
   // Where Am I?
   const handleWhereAmI = () => {
-    if (position) {
-      mapRef.current?.flyTo({ center: [position.lng, position.lat], zoom: 17, duration: 1200 });
+    if (!('geolocation' in navigator)) {
+      alert('Geolocation not supported.');
       return;
     }
-    if (!('geolocation' in navigator)) { alert('Geolocation not supported.'); return; }
+
+    const flyToCurrentPosition = (pos) => {
+      if (mapRef.current) {
+        mapRef.current.flyTo({ center: [pos.lng, pos.lat], zoom: 17, duration: 1200 });
+      } else {
+        console.warn('Map ref not available for flyTo');
+      }
+    };
+
+    if (position) {
+      flyToCurrentPosition(position);
+      return;
+    }
+
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setPosition(newPos);
-        mapRef.current?.flyTo({ center: [newPos.lng, newPos.lat], zoom: 17, duration: 1200 });
+        flyToCurrentPosition(newPos);
         setIsLocating(false);
       },
       (err) => { alert('Unable to retrieve location: ' + err.message); setIsLocating(false); },
