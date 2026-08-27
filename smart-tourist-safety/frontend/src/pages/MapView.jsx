@@ -203,9 +203,47 @@ function PitchController({ mapStyle }) {
 // ---------------------------------------------------------------------------
 // MapView — Full-screen interactive map with MapCN
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// FlyToHandler — flies map to position when flyToPosition changes
+// (uses useMap hook so it works reliably inside Map context)
+// ---------------------------------------------------------------------------
+function FlyToHandler({ flyToPosition }) {
+  const { map, isLoaded } = useMap();
+  const lastTsRef = useRef(null);
+
+  useEffect(() => {
+    if (!flyToPosition || !map || !isLoaded) return;
+    if (flyToPosition._ts && flyToPosition._ts === lastTsRef.current) return;
+    lastTsRef.current = flyToPosition._ts || null;
+
+    try {
+      map.flyTo({
+        center: [flyToPosition.lng, flyToPosition.lat],
+        zoom: 17,
+        duration: 1200,
+      });
+    } catch (err) {
+      console.warn('FlyToHandler: flyTo failed, trying easeTo', err);
+      try {
+        map.easeTo({
+          center: [flyToPosition.lng, flyToPosition.lat],
+          zoom: 17,
+          duration: 800,
+        });
+      } catch (err2) {
+        console.error('FlyToHandler: easeTo also failed', err2);
+      }
+    }
+  }, [map, isLoaded, flyToPosition]);
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// MapView — Full-screen interactive map with MapCN
+// ---------------------------------------------------------------------------
 const MapView = () => {
   const navigate = useNavigate();
-  const mapRef = useRef(null);
 
   const [position, setPosition] = useState(null);
   const [zones, setZones] = useState([]);
@@ -216,6 +254,7 @@ const MapView = () => {
   const [proximityZone, setProximityZone] = useState(null);
   const alertedZonesRef = useRef(new Set());
   const [isLocating, setIsLocating] = useState(false);
+  const [flyToPosition, setFlyToPosition] = useState(null);
 
   // Style switcher state
   const [mapStyle, setMapStyle] = useState('default');
@@ -303,32 +342,26 @@ const MapView = () => {
     finally { setIsSosLoading(false); }
   };
 
-  // Where Am I?
+  // Where Am I? — uses state-driven flyTo via FlyToHandler (reliable)
   const handleWhereAmI = () => {
     if (!('geolocation' in navigator)) {
       alert('Geolocation not supported.');
       return;
     }
 
-    const flyToCurrentPosition = (pos) => {
-      if (mapRef.current) {
-        mapRef.current.flyTo({ center: [pos.lng, pos.lat], zoom: 17, duration: 1200 });
-      } else {
-        console.warn('Map ref not available for flyTo');
-      }
-    };
-
+    // If we already have a position, just fly to it
     if (position) {
-      flyToCurrentPosition(position);
+      setFlyToPosition({ ...position, _ts: Date.now() });
       return;
     }
 
+    // Otherwise fetch fresh position first
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setPosition(newPos);
-        flyToCurrentPosition(newPos);
+        setFlyToPosition({ ...newPos, _ts: Date.now() });
         setIsLocating(false);
       },
       (err) => { alert('Unable to retrieve location: ' + err.message); setIsLocating(false); },
@@ -342,7 +375,6 @@ const MapView = () => {
     <div className="h-screen w-screen relative">
       {/* Full-screen MapCN Map */}
       <Map
-        ref={mapRef}
         center={[77.209, 28.6139]}
         zoom={13}
         styles={selectedStyles}
@@ -350,6 +382,9 @@ const MapView = () => {
       >
         {/* Geolocation watcher */}
         <LocationWatcher setPosition={setPosition} />
+
+        {/* FlyTo handler — reacts to flyToPosition state changes */}
+        <FlyToHandler flyToPosition={flyToPosition} />
 
         {/* Map click handler (zone-adding mode) */}
         <MapClickHandler isAddingMode={isAddingZone} onLocationSelected={handleMapClick} />
