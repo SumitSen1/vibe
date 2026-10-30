@@ -5,7 +5,7 @@ const api_url = import.meta.env.VITE_API_URL;
 // Uses relative URL so Vite's dev proxy forwards to the backend.
 // In production, configure your reverse proxy (nginx, etc.) similarly.
 const authAxios = axios.create({
-  baseURL: '${api_url}/api/auth',
+  baseURL: `${api_url}/api/auth`,
   headers: { 'Content-Type': 'application/json' },
   timeout: 15_000,
 });
