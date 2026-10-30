@@ -49,7 +49,7 @@ function LocationWatcher({ setPosition }) {
     if (!('geolocation' in navigator)) return;
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (pos) => setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude}),
       (err) => console.warn('Location error:', err.message),
       { enableHighAccuracy: true, maximumAge: 0 }
     );
