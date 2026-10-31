@@ -19,7 +19,8 @@ export const protect = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || 'tourist_safety_secret_jwt_key_fallback';
+    const decoded = jwt.verify(token, secret);
     req.user = await User.findById(decoded.id).select('-password');
 
     if (!req.user) {

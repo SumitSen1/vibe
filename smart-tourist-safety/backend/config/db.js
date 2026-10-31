@@ -2,12 +2,25 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const connectionInstance = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`\n MONGODB IS CONNECTED || DB_Host: ${connectionInstance.connection.host}`);
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not defined in backend/.env');
+    }
+
+    const connectionInstance = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    console.log(`\n✅ MONGODB CONNECTED || Host: ${connectionInstance.connection.host} || DB: ${connectionInstance.connection.name}`);
   } catch (error) {
-    console.log('MONGO_DB CONNECTION FAILED\n', error);
-    process.exit(1);
+    console.error('❌ MONGO_DB CONNECTION FAILED:\n', error.message || error);
   }
 };
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected.');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 MongoDB reconnected successfully.');
+});
 
 export default connectDB;

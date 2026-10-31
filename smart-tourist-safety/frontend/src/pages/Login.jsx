@@ -71,7 +71,7 @@ const Login = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="label-text" htmlFor="username">Username</label>
+              <label className="label-text" htmlFor="username">Username or Email</label>
               <input
                 id="username"
                 name="username"
@@ -79,7 +79,7 @@ const Login = () => {
                 autoComplete="username"
                 required
                 className="input-field"
-                placeholder="Enter your username"
+                placeholder="Enter your username or email"
                 value={formData.username}
                 onChange={handleChange}
               />
