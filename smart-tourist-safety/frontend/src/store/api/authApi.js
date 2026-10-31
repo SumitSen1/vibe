@@ -1,13 +1,18 @@
 import axios from 'axios';
-const api_url = import.meta.env.VITE_API_URL;
+
+// Backend URL resolution:
+// 1. Explicit VITE_API_URL if set in environment
+// 2. Production fallback to Render backend
+// 3. In dev mode without VITE_API_URL, empty string (so Vite dev proxy forwards /api to localhost:5000)
+const rawApiUrl = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? 'https://vibe-4pwu.onrender.com' : '');
+export const BACKEND_URL = rawApiUrl ? rawApiUrl.replace(/\/+$/, '') : '';
+export const AUTH_BASE_URL = BACKEND_URL ? `${BACKEND_URL}/api/auth` : '/api/auth';
 
 // ── Axios Instance ─────────────────────────────────────────────────
-// Uses relative URL so Vite's dev proxy forwards to the backend.
-// In production, configure your reverse proxy (nginx, etc.) similarly.
 const authAxios = axios.create({
-  baseURL: `${api_url}/api/auth`,
+  baseURL: AUTH_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15_000,
+  timeout: 60_000, // 60s to accommodate Render free tier cold starts
 });
 
 // We store a reference to the store getter to avoid circular imports.

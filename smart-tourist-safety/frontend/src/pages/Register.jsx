@@ -79,14 +79,34 @@ const Register = () => {
       setLocalError('Passwords do not match.');
       return false;
     }
+    if (formData.password.length < 8) {
+      setLocalError('Password must be at least 8 characters.');
+      return false;
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/.test(formData.password)) {
+      setLocalError('Password must contain uppercase, lowercase, number, and a special character.');
+      return false;
+    }
     if (formData.nationality === 'Indian') {
-      if (formData.aadhaarNumber && !/^\d{12}$/.test(formData.aadhaarNumber)) {
+      if (!formData.aadhaarNumber || !/^\d{12}$/.test(formData.aadhaarNumber)) {
         setLocalError('Aadhaar number must be exactly 12 digits.');
+        return false;
+      }
+      if (!formData.digitalTouristId || !formData.digitalTouristId.trim()) {
+        setLocalError('Digital Tourist ID is required for Indian nationals.');
         return false;
       }
     } else {
       if (!formData.passportNumber) {
         setLocalError('Passport number is required for foreign nationals.');
+        return false;
+      }
+      if (!formData.phoneNumber) {
+        setLocalError('Phone number is required for foreign nationals.');
+        return false;
+      }
+      if (!formData.currentLocation || !formData.destinationLocation) {
+        setLocalError('Current and destination locations are required for foreign nationals.');
         return false;
       }
     }
@@ -161,7 +181,7 @@ const Register = () => {
                 </div>
                 <div>
                   <label className="label-text">Digital Tourist ID</label>
-                  <input required type="text" name="digitalTouristId" className="input-field" placeholder="Optional DL or Tourist ID" value={formData.digitalTouristId} onChange={handleChange} />
+                  <input required type="text" name="digitalTouristId" className="input-field" placeholder="DL or Tourist ID" value={formData.digitalTouristId} onChange={handleChange} />
                 </div>
               </div>
             ) : (

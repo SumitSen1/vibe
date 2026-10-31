@@ -5,6 +5,7 @@ import { Map, useMap, MapMarker, MarkerContent, MarkerPopup } from '../component
 import CommentModal from '../components/CommentModal';
 import ProximityAlert from '../components/ProximityAlert';
 import { fetchZones as fetchZonesUtil, createZone, updateZone, deleteZone } from '../utils/zoneStorage';
+import { BACKEND_URL } from '../store/api/authApi';
 
 // ---------------------------------------------------------------------------
 // Map style definitions — compatible with MapLibre / mapcn styles prop
@@ -331,7 +332,8 @@ const MapView = () => {
     setIsSosLoading(true);
     try {
       const token = useAuthStore.getState().token;
-      const res = await fetch('/api/alerts', {
+      const alertsUrl = BACKEND_URL ? `${BACKEND_URL}/api/alerts` : '/api/alerts';
+      const res = await fetch(alertsUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ lat: position.lat, lng: position.lng }),

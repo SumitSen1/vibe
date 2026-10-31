@@ -8,8 +8,9 @@
  */
 
 import { useAuthStore } from '../store';
+import { BACKEND_URL } from '../store/api/authApi';
 
-const API_URL = '/api/zones';
+const API_URL = BACKEND_URL ? `${BACKEND_URL}/api/zones` : '/api/zones';
 const LS_KEY = 'tourist_safety_zones';
 
 // ── Helpers ────────────────────────────────────────────────────────

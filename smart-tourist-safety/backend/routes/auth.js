@@ -40,7 +40,7 @@ const loginLimiter = rateLimit({
 
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
+  max: 20,
   message: {
     success: false,
     message: 'Too many registration attempts. Please try again after an hour.',
@@ -62,7 +62,7 @@ const registerValidation = [
   body('emergencyContact.relation').trim().notEmpty().withMessage('Emergency contact relation is required'),
   body('password')
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/)
     .withMessage('Password must contain uppercase, lowercase, number, and special character'),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.password) throw new Error('Passwords do not match');

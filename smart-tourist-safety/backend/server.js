@@ -13,13 +13,41 @@ connectDB();
 
 const app = express();
 
+// ── Trust Proxy ────────────────────────────────────────────────────
+// Essential behind Render's reverse proxy for correct req.ip and rate limiting
+app.set('trust proxy', 1);
+
 // ── Security Middleware ────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://vibe-frontend-t5b8.onrender.com',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://your-production-domain.com']
-      : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1');
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS origin not allowed: ${origin}`));
+    },
     credentials: true,
   })
 );
