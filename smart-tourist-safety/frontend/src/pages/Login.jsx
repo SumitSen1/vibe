@@ -30,6 +30,9 @@ const Login = () => {
     const result = await login(formData);
     if (result.success) {
       navigate('/dashboard');
+    }else{
+      console.log(result.error);
+      
     }
   };
 
