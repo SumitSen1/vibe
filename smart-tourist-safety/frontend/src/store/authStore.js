@@ -42,6 +42,9 @@ export const useAuthStore = create(
               error: null,
             });
             return { success: true };
+          }else{
+            console.log(data.error);
+            
           }
           set({ isLoading: false, error: data.message || 'Login failed.' });
           return { success: false, message: data.message };
